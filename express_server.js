@@ -19,8 +19,16 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);
-  res.send("ok");
+  const id = generateRandomString();
+  req.body.longURL.slice(0, 7) === "http://"
+    ? (urlDatabase[id] = req.body.longURL)
+    : (urlDatabase[id] = "http://" + req.body.longURL);
+  res.redirect(`/urls/${id}`);
+});
+
+app.get("/u/:id", (req, res) => {
+  const longURL = urlDatabase[req.params.id];
+  res.redirect(longURL);
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -34,10 +42,14 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-function generateRandomString() {}
-// app.get("/urls.json", (req, res) => {
-//   res.json(urlDatabase);
-// });
+function generateRandomString() {
+  return Array.from(Array(6), () =>
+    Math.floor(Math.random() * 36).toString(36)
+  ).join("");
+}
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
+});
 // app.get("/hello", (req, res) => {
 //   res.send("<html><body>Hello <b>World</b></body></html>\n");
 // });
