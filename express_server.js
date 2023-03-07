@@ -18,6 +18,17 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+app.get("/urls/:id", (req, res) => {
+  const longURL = urlDatabase[req.params.id];
+  const templateVars = { id: req.params.id, longURL };
+  res.render("urls_show", templateVars);
+});
+
+app.get("/urls", (req, res) => {
+  const templateVars = { urls: urlDatabase };
+  res.render("urls_index", templateVars);
+});
+
 app.post("/urls", (req, res) => {
   const id = generateRandomString();
   req.body.longURL.slice(0, 7) === "http://"
@@ -31,15 +42,10 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
-app.get("/urls/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id];
-  const templateVars = { id: req.params.id, longURL };
-  res.render("urls_show", templateVars);
-});
-
-app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
-  res.render("urls_index", templateVars);
+app.post("/urls/:id/delete", (req, res) => {
+  const id = req.params.id;
+  delete urlDatabase[id];
+  res.redirect("/urls");
 });
 
 function generateRandomString() {
