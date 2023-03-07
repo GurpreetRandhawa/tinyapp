@@ -42,6 +42,14 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
+app.post("/urls/:id", (req, res) => {
+  const id = req.params.id;
+  req.body.newURL.slice(0, 7) === "http://"
+    ? (urlDatabase[id] = req.body.newURL)
+    : (urlDatabase[id] = "http://" + req.body.newURL);
+  res.redirect("/urls");
+});
+
 app.post("/urls/:id/delete", (req, res) => {
   const id = req.params.id;
   delete urlDatabase[id];
