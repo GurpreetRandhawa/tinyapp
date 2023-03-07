@@ -3,6 +3,7 @@ const app = express();
 const PORT = 8080;
 
 app.set("view engine", "ejs");
+app.use(express.urlencoded({ extended: true }));
 
 const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
@@ -11,6 +12,15 @@ const urlDatabase = {
 
 app.get("/", (req, res) => {
   res.send("Hello!");
+});
+
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+});
+
+app.post("/urls", (req, res) => {
+  console.log(req.body);
+  res.send("ok");
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -23,20 +33,22 @@ app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-app.get("/set", (req, res) => {
-  const a = 1;
-  res.send(`a = ${a}`);
-});
 
-app.get("/fetch", (req, res) => {
-  res.send(`a = ${a}`);
-});
+function generateRandomString() {}
+// app.get("/urls.json", (req, res) => {
+//   res.json(urlDatabase);
+// });
+// app.get("/hello", (req, res) => {
+//   res.send("<html><body>Hello <b>World</b></body></html>\n");
+// });
+// app.get("/set", (req, res) => {
+//   const a = 1;
+//   res.send(`a = ${a}`);
+// });
+
+// app.get("/fetch", (req, res) => {
+//   res.send(`a = ${a}`);
+// });
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
