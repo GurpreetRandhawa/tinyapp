@@ -42,6 +42,11 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
+app.post("/login", (req, res) => {
+  res.cookie("username", req.body.username);
+  res.redirect("/urls");
+});
+
 app.post("/urls/:id", (req, res) => {
   const id = req.params.id;
   req.body.newURL.slice(0, 7) === "http://"
