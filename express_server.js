@@ -21,6 +21,11 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
+app.get("/register", (req, res) => {
+  const templateVars = { username: req.cookies["username"] };
+  res.render("user_register", templateVars);
+});
+
 app.get("/urls/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
   const templateVars = {
