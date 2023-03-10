@@ -31,14 +31,8 @@
       <% } else { %>
       <form class="form-inline" action="/login" method="POST">
         <div class="form-group mb-2">
-          <input
-            class="form-control"
-            type="text"
-            name="username"
-            placeholder="Username"
-            style="width: 300px; margin: 1em"
-          />
-          <button type="submit" class="btn btn-outline-dark">Login</button>
+          <a href = "/register" ><div class="btn btn-outline-dark" style="margin-right: 1rem;">Register</div></a>
+          <a href = "/login" ><div class="btn btn-outline-dark">Login</button></a>
         </div>
       </form>
       <% } %>
