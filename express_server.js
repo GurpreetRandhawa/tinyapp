@@ -57,6 +57,16 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+app.get("/u/:id", (req, res) => {
+  const longURL = urlDatabase[req.params.id];
+  res.redirect(longURL);
+});
+
+app.get("/login", (req, res) => {
+  const templateVars = { user: users[req.cookies["user_id"]] };
+  res.render("urls_login", templateVars);
+});
+
 app.post("/urls", (req, res) => {
   const id = generateRandomString();
   req.body.longURL.slice(0, 7) === "http://"
@@ -83,24 +93,23 @@ app.post("/register", (req, res) => {
   }
 });
 
-app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id];
-  res.redirect(longURL);
-});
-
-app.get("/login", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]] };
-  res.render("urls_login", templateVars);
-});
-
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
-  res.redirect("/urls");
+  const userFinder = findUserbyEmail(req.body.email);
+  if (!userFinder) {
+    res.sendStatus(403);
+  } else {
+    if (userFinder.password === req.body.password) {
+      res.cookie("user_id", userFinder.id);
+      res.redirect("urls");
+    } else {
+      res.sendStatus(403);
+    }
+  }
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
-  res.redirect("/urls");
+  res.clearCookie("user_id");
+  res.redirect("/login");
 });
 
 app.post("/urls/:id", (req, res) => {
@@ -117,6 +126,11 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect("/urls");
 });
 
+/**
+ * Function to find if a particular user exists or not by taking email from form as parameter.
+ * @param {*} email
+ * @returns null i user not found, if user found then returns the specific user object.
+ */
 function findUserbyEmail(email) {
   for (const key in users) {
     if (users[key].email === email) {
@@ -126,6 +140,10 @@ function findUserbyEmail(email) {
   return null;
 }
 
+/**
+ * Function to generate random six digit alphanumeric string
+ * @returns six digit random alphanumeric string
+ */
 function generateRandomString() {
   return Array.from(Array(6), () =>
     Math.floor(Math.random() * 36).toString(36)
