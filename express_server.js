@@ -1,5 +1,6 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
+const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080;
 
@@ -118,10 +119,12 @@ app.post("/register", (req, res) => {
     res.sendStatus(400);
   } else {
     const id = generateRandomString();
+    const password = req.body.password;
+    const hashedPassword = bcrypt.hashSync(password, 10);
     const userObject = {
       id: id,
       email: req.body.email,
-      password: req.body.password,
+      password: hashedPassword,
     };
     users[id] = userObject;
     res.cookie("user_id", id);
@@ -134,7 +137,7 @@ app.post("/login", (req, res) => {
   if (!userFinder) {
     res.sendStatus(403);
   } else {
-    if (userFinder.password === req.body.password) {
+    if (bcrypt.compareSync(req.body.password, userFinder.password)) {
       res.cookie("user_id", userFinder.id);
       res.redirect("urls");
     } else {
