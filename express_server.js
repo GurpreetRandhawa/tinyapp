@@ -30,13 +30,21 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]] };
-  res.render("urls_new", templateVars);
+  if (req.cookies["user_id"]) {
+    const templateVars = { user: users[req.cookies["user_id"]] };
+    res.render("urls_new", templateVars);
+  } else {
+    res.redirect("/login");
+  }
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]] };
-  res.render("user_register", templateVars);
+  if (req.cookies["user_id"]) {
+    res.redirect("/urls");
+  } else {
+    const templateVars = { user: users[req.cookies["user_id"]] };
+    res.render("user_register", templateVars);
+  }
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -59,20 +67,30 @@ app.get("/urls", (req, res) => {
 
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
-  res.redirect(longURL);
+  longURL
+    ? res.redirect(longURL)
+    : res.send("<h2>This short url does not exist.</h2>");
 });
 
 app.get("/login", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]] };
-  res.render("urls_login", templateVars);
+  if (req.cookies["user_id"]) {
+    res.redirect("/urls");
+  } else {
+    const templateVars = { user: users[req.cookies["user_id"]] };
+    res.render("urls_login", templateVars);
+  }
 });
 
 app.post("/urls", (req, res) => {
-  const id = generateRandomString();
-  req.body.longURL.slice(0, 7) === "http://"
-    ? (urlDatabase[id] = req.body.longURL)
-    : (urlDatabase[id] = "http://" + req.body.longURL);
-  res.redirect(`/urls/${id}`);
+  if (req.cookies["user_id"]) {
+    const id = generateRandomString();
+    req.body.longURL.slice(0, 7) === "http://"
+      ? (urlDatabase[id] = req.body.longURL)
+      : (urlDatabase[id] = "http://" + req.body.longURL);
+    res.redirect(`/urls/${id}`);
+  } else {
+    res.send("<h2>Plese login to use this feature.</h2>");
+  }
 });
 
 app.post("/register", (req, res) => {
