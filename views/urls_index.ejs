@@ -20,6 +20,7 @@
     <%- include('partials/_header',{"user": user}) %>
     <main style="margin: 1em">
       <h3>My URLs</h3>
+      <% if(user) { %>
       <table class="table">
         <thead>
           <tr>
@@ -34,7 +35,7 @@
           <tr>
             <form method="POST" action="/urls/<%= id %>/delete">
               <td><%= id %></td>
-              <td><%= urls[id] %></td>
+              <td><%= urls[id].longURL %></td>
               <td>
                 <a href="/urls/<%= id%>"
                   ><div class="btn btn-outline-primary">Edit</div></a
@@ -50,6 +51,9 @@
           <% } %>
         </tbody>
       </table>
+      <% } else { %>
+      <h3 style="margin-top: 3rem">Please register/login first</h3>
+      <% } %>
     </main>
     <!-- Bootstrap JS -->
     <script
