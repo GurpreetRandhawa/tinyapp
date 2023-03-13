@@ -1,16 +1,22 @@
+//Require statements
 const express = require("express");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
 const methodOverride = require("method-override");
+
+//Requiring helper functions
 const {
   findUserbyEmail,
   generateRandomString,
   urlsForUser,
 } = require("./helpers");
+
 const app = express();
 const PORT = 8080;
 
+//Setting view engine to EJS
 app.set("view engine", "ejs");
+
 app.use(express.urlencoded({ extended: true }));
 app.use(
   cookieSession({
@@ -23,8 +29,39 @@ app.use(
 );
 app.use(methodOverride("_method"));
 
+/**
+ * The structure of URLDatabase is as below:
+ * 
+ * const urlDatabase = {
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
+};
+ */
+
 const urlDatabase = {};
 
+/**
+ * The structure of users datastructure is as below:
+ * 
+ * const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
+ */
 const users = {};
 
 app.get("/", (req, res) => {
@@ -32,6 +69,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
+  //Checking if user is logged-in
   if (req.session.user_id) {
     const templateVars = { user: users[req.session.user_id] };
     res.render("urls_new", templateVars);
@@ -41,6 +79,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
+  //Checking if user is logged-in
   if (req.session.user_id) {
     res.redirect("/urls");
   } else {
@@ -50,8 +89,11 @@ app.get("/register", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
+  //Checking if user is logged-in
   if (req.session.user_id) {
+    //Checking if the id(short URL) was created and exists in urlDatabase
     if (urlDatabase[req.params.id]) {
+      //Checking if the id(short URL) belongs to the user and was created by him
       if (urlDatabase[req.params.id].userID === req.session.user_id) {
         const longURL = urlDatabase[req.params.id].longURL;
         const templateVars = {
@@ -72,6 +114,7 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
+  //Calling function urlsForUser to get refined urlDatabse containing only the shortURLs that were created by the user
   const refinedUrlDatabase = urlsForUser(req.session.user_id, urlDatabase);
   const templateVars = {
     user: users[req.session.user_id],
@@ -81,6 +124,7 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
+  //Checking if it is a valid id(short URL)
   if (urlDatabase[req.params.id]) {
     const longURL = urlDatabase[req.params.id].longURL;
     res.redirect(longURL);
@@ -90,6 +134,7 @@ app.get("/u/:id", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
+  //Checking if user is already logged-in
   if (req.session.user_id) {
     res.redirect("/urls");
   } else {
@@ -99,6 +144,7 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
+  //Checking if user is logged-in
   if (req.session.user_id) {
     const id = generateRandomString();
     let longURL = "";
@@ -113,9 +159,12 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
+  //Checking if entered email or password is not empty
   if (req.body.email === "" || req.body.password === "") {
     res.sendStatus(400);
-  } else if (findUserbyEmail(req.body.email, users)) {
+  }
+  //Checking if user with same email has already registered by calling findUserbyEmail function
+  else if (findUserbyEmail(req.body.email, users)) {
     res.sendStatus(400);
   } else {
     const id = generateRandomString();
@@ -133,10 +182,12 @@ app.post("/register", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
+  //Calling findUserbyEmail function and using it's return value in "if" statement. If user is registered then only let him login
   const userFinder = findUserbyEmail(req.body.email, users);
   if (!userFinder) {
     res.sendStatus(403);
   } else {
+    //Comparing passwords entering in login form and password entered while registering
     if (bcrypt.compareSync(req.body.password, userFinder.password)) {
       req.session.user_id = userFinder.id;
       res.redirect("urls");
@@ -147,14 +198,18 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
+  //Clearing cookies
   res.clearCookie("session");
   res.clearCookie("session.sig");
   res.redirect("/login");
 });
 
 app.put("/urls/:id", (req, res) => {
+  //Checking if user is logged in
   if (req.session.user_id) {
+    //Checking if the id(short URL) was created and exists in urlDatabase
     if (urlDatabase[req.params.id]) {
+      //Checking if the id(short URL) belongs to the user and was created by him
       if (urlDatabase[req.params.id].userID === req.session.user_id) {
         const id = req.params.id;
         let newURL = "";
@@ -177,8 +232,11 @@ app.put("/urls/:id", (req, res) => {
 });
 
 app.delete("/urls/:id/delete", (req, res) => {
+  //Checking if user is logged in
   if (req.session.user_id) {
+    //Checking if the id(short URL exists in urlDatabase)
     if (urlDatabase[req.params.id]) {
+      //Checking if the id(short URL) belongs to the user and was created by him
       if (urlDatabase[req.params.id].userID === req.session.user_id) {
         const id = req.params.id;
         delete urlDatabase[id];
